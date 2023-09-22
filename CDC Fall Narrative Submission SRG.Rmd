@@ -58,14 +58,17 @@ Seven physicians were contacted to participate in the panel, of whom 5 elected t
 
 During the structured interview, panel members spent a median of 7.5% of their practice time treating patients due to medical consequences of falls (range 2.5-27.5%).
 
-```{r}
+```{r Practice time}
 # Load practice time data
 practice_time <- read_csv("Data/Practice Time.csv")
 
 # Output plot
-ggplot(data = practice_time,aes(x=respondant)) +
-  geom_point(aes(y=mid))+
-  geom_errorbar(aes(ymin= low,ymax = high))
+ggplot(data = practice_time,aes(x=reorder(respondant,-mid))) +
+  #geom_point(aes(y=mid))+
+  geom_errorbar(aes(ymin= low,ymax = high))+
+  theme_minimal()+
+  ylab("")+
+  xlab("")
 # TKTK make graph prettier.
 
 ```
@@ -114,12 +117,14 @@ injury_patterns <- injury_patterns_import %>%
   mutate(Injury = stringi::stri_replace_all_fixed(Injury,"]","")) %>%
   
   arrange(desc(Mean)) %>%
-  mutate(Injury = factor(Injury)) %>%
+  
+  mutate(Injury = factor(Injury,
+                         levels = unique(Injury))) %>%
   
   # remove summary stats
   dplyr::select(-Median,-Mean) %>%
   # # convert to long format
-    pivot_longer(-Injury,names_to = "respondent",values_to = "ranking") %>%
+  pivot_longer(-Injury,names_to = "respondent",values_to = "ranking") %>%
   # convert ranking numeric to text
   mutate(ranking = 
            factor(ranking, 
@@ -128,34 +133,55 @@ injury_patterns <- injury_patterns_import %>%
                              "Highly suggestive of frailty",
                              "Suspicious for frailty",
                              "Not assocaited with frailty"))
-  )
-
+  ) %>%
+  mutate(order = 
+           as.numeric(Injury))
 
 ggplot(data = injury_patterns) +
-  geom_histogram(aes(x=ranking),stat = "count") +
+  coord_flip()+
+  geom_bar(aes(x=reorder(Injury,-as.numeric(Injury)),fill=ranking))+
   theme_minimal()+
-  facet_wrap(~Injury,ncol = 1, strip.position = "left")
+  ylab("")+
+  xlab("") + 
+  theme(legend.position = "bottom",
+        legend.title = element_blank())+
+  scale_fill_grey()
 
 ```
 
 Panelists also ranked fall energy as the most important factor associated with the likelihood of a fall related injury (median ranking 1/10), followed by fragility (median ranking 2/10). Intoxication, inappropriate medication or overmedication, medical conditions affecting stability/balance, and cardiac and neurovascular conditions affecting consciousness were all tied for third-place (median ranking 4/10).
 
-## R Markdown
+```{r fall factors, include = TRUE}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# Load injury pattern data
+fall_factor_import <- read_csv("Data/factor interview data.csv")
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+fall_factors <- fall_factor_import %>%
+  # remove brackets
+  mutate(Factor = stringi::stri_replace_all_fixed(Factor,"[","")) %>%
+  mutate(Factor = stringi::stri_replace_all_fixed(Factor,"]","")) %>%
+  
+  arrange(desc(Median)) %>%
+  
+  mutate(Factor = factor(Factor,
+                         levels = unique(Factor))) %>%
+  dplyr::select(-Median,-Mean) %>%
+  # # convert to long format
+  pivot_longer(-Factor,names_to = "respondent",values_to = "ranking")
+  
 
-```{r cars}
-summary(cars)
+fall_factors %>%
+  ggplot(aes(x=Factor,y=ranking))+
+  geom_boxplot(fill="grey")+
+  coord_flip()+
+  xlab("")+
+  ylab("Importance")+
+  theme_minimal()
+
 ```
 
-## Including Plots
+## Part 2: Analytic Approach
 
-You can also embed plots, for example:
+### Methods
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Based on XXX, we YYY, how you like that?
