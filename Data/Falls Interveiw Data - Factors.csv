@@ -1,0 +1,11 @@
+Factor,A,B,C,D,E,Median,Mean
+ [Fall energy (did the patient fall off a ladder or was it ground level)?],1,3,1,1,4,1,2
+ [Fragility],2,3,2,2,2,2,2
+" [Intoxication, inappropriate medication, or overmedication which might impair judgement, coordiantion, or perception]",4,4,5,3,3,4,4
+ [Medical conditions affecting stability/balance],4,4,4,6,7,4,5
+" [Cardiac and neurovascular conditions affecting consciousness (e.g. postural hypotension, syncope)]",8,4,3,7,1,4,5
+ [Medical conditions affecting cognition],7,4,8,5,5,5,6
+ [Unfamiliar activity],5,5,9,8,6,6,7
+" [Environmental factors (rugs, grab bars)]",6,4,6,5,9,6,6
+" [Age, irrespective of other factors]",3,6,10,4,8,6,6
+ [Distraction],8,5,7,7,10,7,7

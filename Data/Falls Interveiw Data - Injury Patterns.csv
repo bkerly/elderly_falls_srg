@@ -1,0 +1,30 @@
+Injury,A,B,C,D,E,Median,Mean
+[Pelvic fracture],3,3,4,4,4,4,3.6
+[Hip fracture (native joint)],3,2,4,3,4,3,3.2
+[Femur fracture],3,2,3,4,4,3,3.2
+"[Thoracic vertebral fracture, noncompression]",2,2,4,4,3,3,3
+[Sacral fracture],3,2,3,3,4,3,3
+[Multiple or displaced rib fracture],3,3,3,3,3,3,3
+"[Lumbar vertebral fracture, noncompression]",2,2,4,4,3,3,3
+[Hip fracture (artificial joint)],3,2,3,3,4,3,3
+[Tibia fracture],1,2,3,4,4,3,2.8
+[Subdural hematoma],3,3,2,2,4,3,2.8
+[Radius fracture],2,2,4,3,3,3,2.8
+[Humerus fracture],2,2,3,4,3,3,2.8
+[Hemo/pneumothroax],3,2,3,3,3,3,2.8
+"[Cervical vertebral fracture, noncompression]",2,2,3,4,3,3,2.8
+[Any vertebral compression fracture],3,2,3,3,3,3,2.8
+[Ulnar fracture],2,2,3,3,3,3,2.6
+[Fibula fracture],1,2,3,3,4,3,2.6
+[Complex facial trauma],3,3,2,2,3,3,2.6
+[Foot fracture],1,2,3,3,3,3,2.4
+[Clavicle fracture],1,2,3,3,3,3,2.4
+[Medically significant abdominal organ injury],2,2,3,4,2,2,2.6
+[Hip dislocation],1,2,2,3,4,2,2.4
+[Subarachnoid hemorrhage],2,2,3,1,3,2,2.2
+"[Single, nondisplaced rib fracture]",1,2,2,3,3,2,2.2
+[Shoulder dislocation],1,2,1,3,3,2,2
+[Scalp trauma],2,3,1,1,3,2,2
+[Hand/finger fracture],1,2,2,2,3,2,2
+[Epidural hematoma],1,2,2,2,3,2,2
+[Ankle dislocation],1,2,1,2,3,2,1.8
