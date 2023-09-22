@@ -112,24 +112,29 @@ injury_patterns <- injury_patterns_import %>%
   # remove brackets
   mutate(Injury = stringi::stri_replace_all_fixed(Injury,"[","")) %>%
   mutate(Injury = stringi::stri_replace_all_fixed(Injury,"]","")) %>%
+  
+  arrange(desc(Mean)) %>%
+  mutate(Injury = factor(Injury)) %>%
+  
   # remove summary stats
   dplyr::select(-Median,-Mean) %>%
   # # convert to long format
-  #  pivot_longer(-Injury,names_to = "respondent",values_to = "ranking") %>%
+    pivot_longer(-Injury,names_to = "respondent",values_to = "ranking") %>%
   # convert ranking numeric to text
-  mutate(across(A:E, ~ 
-           factor(., 
+  mutate(ranking = 
+           factor(ranking, 
                   levels = c(4,3,2,1),
                   labels = c("Pathognomonic for frailty",
                              "Highly suggestive of frailty",
                              "Suspicious for frailty",
                              "Not assocaited with frailty"))
-  ))
-  
+  )
 
-ggplot(data = injury_patterns, aes(x=Injury)) +
-  geom_point(aes(y=ranking),alpha = 0.1)+
-  coord_flip()
+
+ggplot(data = injury_patterns) +
+  geom_histogram(aes(x=ranking),stat = "count") +
+  theme_minimal()+
+  facet_wrap(~Injury,ncol = 1, strip.position = "left")
 
 ```
 
