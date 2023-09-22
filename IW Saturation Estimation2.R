@@ -6,8 +6,8 @@ library(MASS)
 library(episensr)
 
 #Import Data
-  my_data <- read.csv("C:/Users/sje0303/Downloads/primary_data.csv")
-  kw<-read.csv("C:/Users/sje0303/Downloads/keyword import2.csv")
+  my_data <- read.csv("Data/primary_data.csv")
+  kw<-read.csv("Data/keyword import2.csv")
   topics<-c("Fall.Energy", "Intoxication", "Fragility", "Unfamiliar.Activity",
                "Cognition", "Environment", "Consciousness")
 
@@ -53,7 +53,7 @@ library(episensr)
              summarize(ind=sum(ind))%>%
              ungroup()%>%
              mutate(cumsum=cumsum(ind))
-           real<-md2%>%select(V1,cumsum)%>%mutate(Label="Observed")   
+           real<-md2%>%dplyr::select(V1,cumsum)%>%mutate(Label="Observed")   
       
         #Bringing Together Simulated And Observed Data for Plot
         full<-rbind(real,sim)  
@@ -125,7 +125,10 @@ Consciousness<-lps(7)
 Outcome<-ifelse(my_data$disposition>3,1,0)
 
 m1 <- glm.nb(Outcome ~ Fall.Energy+Intoxication+Fragility+Unfamiliar.Activity+
-                               Cognition+Environment+Consciousness+NLength)
+                               Cognition+Environment+Consciousness
+             #+NLength
+             #NLength isn't a declared value, as far as I can tell.
+             )
 
 df<-data.frame(Fall.Energy,Intoxication,Fragility,Unfamiliar.Activity,
                 Cognition,Environment,Consciousness,Outcome)
@@ -160,6 +163,6 @@ QBA(v1,Fall.Energy,"Fall.Energy")
 QBA(v2,Fall.Energy,"Intoxication")
 QBA(v3,Fragility,"Fragility")
 QBA(v4,Unfamiliar.Activity,"Unfamiliar.Activity")
-QBA(v5,Cognition,"Cognition")
+# QBA(v5,Cognition,"Cognition") # Breaks, maybe due to NLength issue?
 QBA(v6,Environment,"Environment")
 QBA(v7,Consciousness,"Consciousness")
