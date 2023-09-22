@@ -5,22 +5,79 @@ date: "`r Sys.Date()`"
 output: pdf_document
 ---
 
-# Executive Summary
+# TKTK: This is the Title of Our Submission
 
-## Key Findings
+***Salish Research Group***
 
--   Finding 1
+*Brian K Erly, MD MPH*
 
--   Finding 2
+*Steven J Erly, PhD MPH*
 
--   Finding 3
+[salishresearchgroup.com](salishresearchgroup.com "Salish Research Group Homepage")
 
-## Summary of your approach
+[salishresearchgroup\@gmail.com](mailto:email@example.com "Salish Research Group Email")
 
-Our approach consisted of both a qualitative interview with
+## Table Of Contents
+
+TKTK
+
+```{r setup, include = FALSE}
+# Set default code options
+knitr::opts_chunk$set(echo = TRUE)
+
+#Set Up Environment
+
+## Load packages
+library(tidyverse)
+library(ggthemes)
+library(lubridate)
+
+## Set grraph themes
+#TKTK
+```
+
+
+## Part 1: Expert Panel
+
+### Methods
+
+In order to ascertain key factors and domains resulting in medically significant falls in persons over 65, we convened a panel of physician experts to participate in a two-step process, involving both a structured interview and a follow up questionnaire.
+
+Participants were solicited from across a range of specialities, including emergency/urgent care, medical, and surgical roles. Participants were asked to commit to a 15 minute interview and 10 minute follow up questionnaire. All participants who completed both the interview and questionnaire received a small gift (value \<\$50).
+
+The initial interview commenced with a review of the project and goals. Next, each panel member was asked about their practice context and the percentage of patients who they see for fall-related complaints. This was followed up with a series of questions designed to elicit causes of severe falls in persons over 65, including causes which make a fall more likely and causes which might cause a fall to be more medically consequential.
+
+Each panel member then received a follow up questionnaire as a google form. This follow up questionnaire was centered around two themes: defining injury patterns associated with fragility / frailty, and ranking the most important factors leading to falls. 
+
+For each of 29 injury patterns, participants were asked to select the degree to which each was associated with frailty in elderly fall patients. Each injury pattern was ranked from 1 (\"Not associated with frailty\") to 4 (\"Pathognomonic for frailty\").
+
+Next, each participant was asked to rank 10 factors in order of their association with risk of serious injury in patients over 65 years old. Participants were instructed to place the factors in order, with no ties.
+
+### Results
+
+Seven physicians were contacted to participate in the panel, of whom 5 elected to participate (71.4%). All participants who agreed to participate in the initial panel completed both the structured interview and follow up questionnaire. The panel was composed of one physician each from the following specialties; emergency medicine, otolaryngology, neurosurgery, orthopedic surgery, and inpatient medicine. All participants were board-eligible or board-certified in their specialty.
+
+During the structured interview, panel members spent a median of 7.5% of their practice time treating patients due to medical consequences of falls (range 2.5-27.5%).
+
+```{r}
+# Load practice time data
+practice_time <- read_csv("Data/Practice Time.csv")
+
+ggplot(data = practice_time,aes(x=respondant)) +
+  geom_point(aes(y=mid))+
+  geom_errorbar(aes(ymin= low,ymax = high))
+
+```
+
+
+Panel members identified eight classes of medication associated with falls, as well as nine underlying medical conditions which might lead to more severe falls in an elderly person (Table 1).
+
+When responding to the follow up questionnaire, the panel identified pelvic fractures as the injury most associated with fragility, followed by fracture of the native hip joint and fracture of the femur. Overall, 20 of the 29 injury patterns examined had a median ranking of 3 (\"Highly suggestive of frailty\") or 4 (\"Pathognomonic for frailty; would not occur in a non-frail person after a fall\").
+
+Panelists also ranked fall energy as the most important factor associated with the likelihood of a fall related injury (median ranking 1/10), followed by fragility (median ranking 2/10). Intoxication, inappropriate medication or overmedication, medical conditions affecting stability/balance, and cardiac and neurovascular conditions affecting consciousness were all tied for third-place (median ranking 4/10).
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
 ```
 
 ## R Markdown
