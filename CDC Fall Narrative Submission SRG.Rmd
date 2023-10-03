@@ -3,8 +3,11 @@ title: "CDC Fall Narrative Submission"
 author: "Salish Research Group"
 date: "`r Sys.Date()`"
 output: 
-html_document:
-  code_folding: hide
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_depth: 3
+    theme: united
 ---
 
 # TKTK: This is the Title of Our Submission
@@ -18,10 +21,6 @@ html_document:
 [salishresearchgroup.com](salishresearchgroup.com "Salish Research Group Homepage")
 
 [salishresearchgroup\@gmail.com](mailto:email@example.com "Salish Research Group Email")
-
-## Table of Contents
-
-TKTK
 
 ```{r setup, include = FALSE}
 
@@ -40,6 +39,16 @@ library(missForest)
 ## Set grraph themes
 #TKTK
 ```
+
+## Introduction
+
+Falls are one of the leading causes of injury and mortality in elderly populations. Among people age 75 and older, an estimated 1/3 of individuals will fall within a given year and 1/4 individuals will suffer serious injury in a fall. Although there has been significant work in identifying risk factors for falls, there is a lack of approachable frameworks for primary prevention of falls. The purpose of this project was to demonstrate the use of machine learning and natural language processing (NLP) to supplement qualitative coding and abstraction of medical record narratives and develop a risk reduction tool for primary prevention of falls. Our project uses a unique combination of methodology to develop our model: qualitative analysis, saturation modelling, and NLP. By basing our analysis on qualitative methods, we are able to leverage subject matter expertise and human judgement. This grounds our results in clinical practice and ensures that we create a tool that is acceptable and interpretable to medical providers. However, qualitative methods are labor intensive and not suitable for research on datasets with thousands of records. By applying NLP and random forest imputation, we are able to extend qualitative research to big data applications and develop estimates that are precise and applicable to uncommon subpopulations. Formally, our project goals were:
+
+1.  Use machine learning to extend human coding of qualitative research themes to novel data
+
+2.  Develop a risk reduction tool for falls for use in primary prevention
+
+![Methods Overview](Methods%20Image.png)
 
 ## Part 1: Expert Panel
 
@@ -189,204 +198,197 @@ fall_factors %>%
 
 ### Methods
 
-We next worked to identify the factors most correlated with fall severity in the fall narrative. For this stage of the analysis, we focused only on the factors which were able to be identified within the narrative. These factors were:
+#### Qualitative Coding
 
--   Fall Energy
--   Intoxication
--   Fragility
--   Unfamiliar Activity
--   Cognition
--   Environment
--   Consciousness
+Guided by the dimensions identified in the clinical surveys, we performed a deductive thematic analysis of the first 500 narratives. Two individuals manually labeled each narrative with the dimensions described by the narrative and extracted qualitative themes present in each narrative.  To ensure consistency, the 500 narratives were double coded, and any discrepancies were resolved by consensus.
 
-First, we manually coded phrases within a randomly selected subset of fall narratives which correlated to the factors selected. We then used these factors to...
+#### Evaluation of Thematic Saturation
 
-*Note: Steve, this is where you need to write some things.*
+To ensure that a sufficient number of narratives were coded, we evaluated the thematic saturation of our training sample using methods described in Guest et al, 2020.  Briefly, thematic saturation reflects the point where additional data points no longer contribute new useful information to the study.  Thematic saturation models apply probability theory to estimate the proportion of total themes that have been described.  For our study, we set a baseline of 40% saturation; if any of our themes were below this threshold, we would code an additional 100 narratives.
+
+#### Random Forest Imputation
+
+Once adequate thematic saturation was achieved, we used a random forest model to link the coded themes to text embeddings and apply these relationships to novel data.  We created a dataset of indicator variables denoting whether each theme was present in each of the 500 coded narratives.  We linked this dataset to the OpenAi text embeddings provided by the contest organizers.  Using R's missForest package, we estimated the relationship between the embeddings and our indicator variables and then applied this to the uncoded narratives.  We used a model with 100 trees in each forest and 10 variables in each split.  We used the first 100 embeddings from the OpenAi model.
+
+#### Risk Ratio Model
+
+We used a negative binomial model on our imputed dataset to estimate the relationship between our themes and risk of severe outcome (Admitted, Held for Observation, or Died).  We included all themes in a single model to identify the independent contribution of each.  We included age and sex in the model as a potential confounders.  We estimated a risk ratio for each theme and selected the top 3 themes for our primary prevention risk reduction tool.
 
 ### Results
 
-```{r part 2 import data}
-  # Import 
-  my_data <- read.csv("Data/primary_data.csv")
-  kw<-read.csv("Data/keyword import2.csv")
-  topics<-c("Fall.Energy", "Intoxication", "Fragility", "Unfamiliar.Activity",
-               "Cognition", "Environment", "Consciousness")
-  my_data500<-my_data[1:500,]%>%
-    mutate(narrative=gsub("[^[:alnum:][:space:]]","",narrative))
-  df<-
-    data.frame(V1=numeric(500))
-  md<-list()
+*Qualitative Coding*
 
-```
+Our subject matter experts identified the following dimensions as contributors to fall severity: "Fall Energy", "Intoxication", "Fragility of Patient", "Participation in Unfamiliar Activity", "Cognitive Impairment", "Dangerous Environment", and "Loss of Consciousness".  The coders identified 21, 8, 34,27, 6, 19, and 12 themes within the first 500 narratives, respectively.  An examples of themes estimates of thematic saturation and an example fit plot for saturation modelling can be found in **Table 1** and **Figure 2.**
 
 We identified 245 total keywords for the seven factors examined (range 5-35 keywords per factor). These were matched to 115,128 patient narratives.
 
 ```{r Estimating Thematic Saturation}
 
-
+ #Part 1: Estimating Thematic Saturation to ensure adequate coding
   
-#Part 1: Estimating Thematic Saturation  
-        
-      SatEst<-function(Topic){
-      kwlist<-kw[,Topic]
-      kwlist2<-kwlist[nzchar(kwlist)]
-        
-      #Loop to search each note for each keywords.  Outputs True/False matrix with one row per note and one column per keyword
-         md<-list()
-         df<-data.frame(V1=numeric(nrow(my_data)))
-          for  (i in 1:length(kwlist2)) {
-            
-              df[,i]<-str_detect(my_data$narrative, kwlist2[i])
-              md[i]<-min(which(df[,i]==TRUE))
-             # print(i) Stopping this indicator because it's just printing the numbers, and I know like all the numbers already.
-          }
-        
+  # Loop through each of several topics      
+  SatEst<-function(Topic){
+    # Create a keyword list for each topic
+    kwlist<-kw[,Topic]
+    # Count the number of characters in each keyword
+    kwlist2<-kwlist[nzchar(kwlist)]
+    
+    #Loop to find first occurrence of each keyword
+      for  (i in 1:length(kwlist2)) {
+        df[,i]<-str_detect(my_data500$narrative, kwlist2[i])
+        md[i]<-min(which(df[,i]==TRUE))
+      }
+    
+    #Saturation Model Model, https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7200005/
+       #Part 1A: Estimate of Overall Saturation
+          N<-500
+          T1<-sum(df[1:500,])/500
+          NTerms<-length(kwlist2)
+          A<-((N-1)*T1*NTerms)/(N*T1-NTerms)
+          Est<-tail(round(NTerms/A*100),1)
           
-      #Mathematical Model, https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7200005/
-         #Part 1: Estimate of Overall Saturation
-         
-         N<-500
-         T1<-sum(df[1:500,])/500
-         NTerms<-length(kwlist2)
-         A<-((N-1)*T1*NTerms)/(N*T1-NTerms)
-         Est<-tail(round(NTerms/A*100),1)
+       #Part 1B: Theoretical Model of Saturation
+           b<-(NTerms-N*T1)/((1-N)*NTerms)
+           N<-seq(1:500)
+           Tn<-A*b*N/(1+b*(N-1))
+           sim<-data.frame(V1=seq(1:500),cumsum=Tn,Label="Simulated")
+           
+       #Part 1C: Identifying When Each Term First Occurred (For Saturation Plot)    
+             md1<-do.call(rbind.data.frame, md)%>%mutate(ind=1)%>%rename(V1=1)
+             md2<-data.frame(V1=seq(1,500,1))%>%left_join(md1)%>%
+               mutate(ind=coalesce(ind,0))%>%
+               group_by(V1)%>%
+               summarize(ind=sum(ind))%>%
+               ungroup()%>%
+               mutate(cumsum=cumsum(ind))
+             real<-md2%>%dplyr::select(V1,cumsum)%>%mutate(Label="Observed")   
       
-         #Part 2: Theoretical Model of Saturation
-         b<-(NTerms-N*T1)/((1-N)*NTerms)
-         N<-seq(1:500)
-         Tn<-A*b*N/(1+b*(N-1))
-         sim<-data.frame(V1=seq(1:500),cumsum=Tn,Label="Simulated")
-         
-      #Plot of observed data vs model      
-         #Dataframe indicating at which note each keyword was first observed 
-           md1<-do.call(rbind.data.frame, md)%>%mutate(ind=1)%>%rename(V1=1)
-           md2<-data.frame(V1=seq(1,500,1))%>%left_join(md1)%>%
-             mutate(ind=coalesce(ind,0))%>%
-             group_by(V1)%>%
-             summarize(ind=sum(ind))%>%
-             ungroup()%>%
-             mutate(cumsum=cumsum(ind))
-           real<-md2%>%dplyr::select(V1,cumsum)%>%mutate(Label="Observed")   
-      
-        #Bringing Together Simulated And Observed Data for Plot
-        full<-rbind(real,sim)  
-        plot<-ggplot(data=full)+
-           geom_line(aes(x=V1,y=cumsum,group=Label, color=Label))+
-           theme(axis.ticks = element_blank(),
-                 panel.grid.minor = element_blank(),
-                 panel.grid.major = element_blank(),
-                 panel.background = element_blank(),
-                 plot.title = element_text(hjust = 0.5)
-           )+ 
-           labs(y = "Keywords Identified", x = "Records Reviewed", colour = "", title=Topic)
-         
-        
-      output<-list(Topic,Est,plot)  
-      return(output)
+        #Part 1D: Bringing Together Simulated And Observed Data for Plot
+           output<-rbind(real,sim)%>%mutate(Estimate=Est, Topic=Topic)
+          return(output)
       }
   
-
-v1<-SatEst("Fall.Energy")
-v2<-SatEst("Intoxication")
-v3<-SatEst("Fragility")
-v4<-SatEst("Unfamiliar.Activity")
-v5<-SatEst("Cognition")
-v6<-SatEst("Environment")
-v7<-SatEst("Consciousness")
-
-#Print Saturation
-data.frame(Topic=topics, Saturation=c(v1[[2]],v2[[2]],v3[[2]],v4[[2]],
-                                      v5[[2]], v6[[2]],v7[[2]]))
-
-```
-
-```{r Plotting Thematic Saturation}
-
-
-#Print Plots
-grid.arrange(v1[[3]], v2[[3]], v3[[3]], v4[[3]],
-             v7[[3]], v6[[3]], v7[[3]],nrow = 7)
+  #Print Estimates of Saturation
+    ests<-bind_rows(lapply(topics,SatEst))
+    # Output and format nicely
+    ests%>%
+      dplyr::select(Topic,Estimate)%>%
+      distinct() %>%
+      mutate(`Example Theme` = c("Fell Backwards",
+                                 "Intoxicated",
+                                 "Walker",
+                                 "Dancing",
+                                 "Alzheimer's Disease",
+                                 "Entanglement",
+                                 "Passed Out")) %>%
+      mutate(Topic = str_replace(Topic,pattern = fixed("."),replacement = " ")) %>%
+      mutate(`Saturation Estimate` = paste0(Estimate,"%")) %>%
+      dplyr::select(Topic, `Example Theme`, `Saturation Estimate`)
 
 ```
 
-```{r Part 2: Epi #Regression Model}
+```{r Saturation Plots}
 
-
-  #Function to Create Indicators for The Presence of Each Keyword
-  lps<-function(ind){
-      kwlist<-unique(kw[ind])
-      kwlist<-kwlist[(kwlist=='')==FALSE]
-      md<-list()
-      df<-data.frame(V1=numeric(nrow(my_data)))
- 
-              for  (i in 1:length(kwlist)) {
-          
-          df[,i]<-str_detect(my_data$narrative, kwlist[i])
-          md[i]<-min(which(df[,i]==TRUE))
-          #print(i)
-          
-        }
-    
-      col<-apply(df, 1, max, na.rm=TRUE)
-      return(col)
+  
+  #Print Plots of Saturation
+for (i in 1:7){
+  ests2<-ests%>%filter(Topic==topics[i])
+  plot<-ggplot(data=ests2)+
+    geom_line(aes(x=V1,y=cumsum,group=Label, color=Label))+
+    theme(axis.ticks = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.background = element_blank(),
+      plot.title = element_text(hjust = 0.5))+ 
+      labs(y = "Themes Identified", x = "Records Reviewed", colour = "", title=topics[i])
+    print(plot)
   }
 
+```
 
-Fall.Energy<-lps(1)
-Intoxication<-lps(2)
-Fragility<-lps(3)
-Unfamiliar.Activity<-lps(4)
-Cognition<-lps(5)
-Environment<-lps(6)
-Consciousness<-lps(7)
+#### Negative Binomial Modelling
 
-#Outcome Indicator
-Outcome<-ifelse(my_data$disposition>3,1,0)
+We applied the qualitative coding to the remaining 114,628 observations using text embeddings and random forest imputation.
 
-m1 <- glm.nb(Outcome ~ Fall.Energy+Intoxication+Fragility+Unfamiliar.Activity+
-                               Cognition+Environment+Consciousness
-             #+NLength
-             #NLength isn't a declared value, as far as I can tell.
-             )
+```{r Part 2: Machine Learning Imputation Using Text Embeddings l}
 
-df<-data.frame(Fall.Energy,Intoxication,Fragility,Unfamiliar.Activity,
-                Cognition,Environment,Consciousness,Outcome)
-
-
-
-QBA<-function(i,Exposure,Label){
-  
-sens<-i[[2]]/100
-Case_Exposed<-df[Exposure==1 & Outcome==1,]%>%nrow()
-Case_Unexposed<-df[Exposure==0 & Outcome==1,]%>%nrow()
-Control_Exposed<-df[Exposure==1 & Outcome==0,]%>%nrow()
-Control_Unexposed<-df[Exposure==0 & Outcome==0,]%>%nrow()
-
-
-g<-episensr::misclassification(matrix(c(Case_Exposed, Case_Unexposed, Control_Exposed, Control_Unexposed),
-                         dimnames = list(c("Case", "Control"),
-                                         c("Exposure +", "Exposure - ")),
-                         nrow = 2, byrow = TRUE),
-                  type = "exposure",
-                  bias_parms = c(sens, sens, 0.97, 0.97))
-
-obs<-t(g$obs.measures[1,])
-adj<-t(g$adj.measures[2,])
-
-output2<-cbind(Label,obs,adj)
-colnames(output2)<-c("Label", "UnadjustedRR", "2.5%" ,"97.5%", "AdjustedRR", "2.5%" ,"97.5%")
-return(output2)
-}
+ #Part 2A: Creating Training Data for Imputation Model (500 first narratives which were coded) 
+    #Function to Create Indicators for The Presence of Each Theme)
+      lps<-function(ind){
+            kwlist<-unique(kw[ind])
+            kwlist<-kwlist[(kwlist=='')==FALSE]
+            for  (i in 1:length(kwlist)) {
+              df[,i]<-str_detect(my_data500$narrative, kwlist[i])
+            }
+            col<-apply(df, 1, max, na.rm=TRUE)
+            return(col)
+          }
+    vars<-as.data.frame(lapply(c(1:7),lps))
+    colnames(vars)<-topics
+    vars$cpsc_case_number<-my_data500$cpsc_case_number
+    
+    #Retreiving Text Embeddings
+      embed<-read_parquet("Data/openai_embeddings_primary_narratives.parquet.gzip")
+      embed2<-as.data.frame(t(as.data.frame(lapply(as.matrix(embed[,2]),unlist))))
+      embed3<-cbind(embed[,1],embed2[,1:100])
+      
+  #Part 2B Merging Training Data with Text Embeddings and finalizing formatting
+    embed4<-vars%>%left_join(embed3)%>%
+    mutate(Fall.Energy=as.factor(Fall.Energy),
+       Intoxication=as.factor(Intoxication),
+       Fragility=as.factor(Fragility),
+       Unfamiliar.Activity=as.factor(Unfamiliar.Activity),
+       Cognition=as.factor(Cognition),
+       Environment=as.factor(Environment),
+       Consciousness=as.factor(Consciousness))
+   
+  #Part 2C: Multiple Imputation to Predict Themes in Narratives that Weren't Cocded
+    embed5<-missForest(embed4)$ximp
 
 ```
 
-```{r QBAs}
+```{r Part4; Negative Binomial Regression To Identify Strongest Risk Factors }
 
-QBA(v1,Fall.Energy,"Fall.Energy")
-QBA(v2,Fall.Energy,"Intoxication")
-QBA(v3,Fragility,"Fragility")
-QBA(v4,Unfamiliar.Activity,"Unfamiliar.Activity")
+#Part4; Negative Binomial Regression To Identify Strongest Risk Factors  
+  #Adding Outcome Indicator to 
+    Outcome<-my_data%>%mutate(Outcome=ifelse(disposition>3,1,0))%>%dplyr::select(cpsc_case_number, Outcome, age, sex)
+    embed6<-embed5%>%left_join(Outcome)
+  #Negative Binomial Model
+    exp(glm(Outcome~Fall.Energy+Intoxication+Fragility+Unfamiliar.Activity+Cognition+Environment+Consciousness+age+sex,embed6,
+      family='binomial')$coefficients)
 
 ```
 
-I kind of think this should be a graph, maybe like one of those meta analysis graphs where you can see all the little studies and if they cross 0 or 1 or whatever.
+A negative binomial model containing all domains and age yielded the following risk ratio estimates:
+
+| Theme                  | Risk Ratio |
+|------------------------|------------|
+| Fall Energy            |  1.06      |
+| Intoxication           | 1.99       |
+| Fragility              | 1.20       |
+| Unfamiliar Activity    | 0.82       |
+| Cognitive Impairment   | 1.09       |
+| Unfamiliar Environment | 0.59       |
+| Loss of Consciousness  | 2.50       |
+
+## Conclusion
+
+Our results suggest that the domains of intoxication, loss of consciousness, and patient fragility are the largest contributors to risk of severe fall in our data set. This agrees well with the judgement of our expert panel, which ranked all of these domains in the top half of factors related to more severe falls.
+
+In contrast, unfamiliar environments and activities were not expected to be top contributors to severe fall risk, and were not found to be associated with severe falls in our data set.
+
+Providers and caregivers who are seeking to prevent severe falls should consider these domains.
+
+## Abridged References
+
+Tinetti, M. E., Speechley, M., & Ginter, S. F. (1988). Risk factors for falls among elderly persons living in the community. New England journal of medicine, 319(26), 1701-1707.
+
+Guest, G., Namey, E., & Chen, M. (2020). A simple method to assess and report thematic saturation in qualitative research. PloS one, 15(5), e0232076
+
+The older they are the harder they fall: Injury patterns and outcomes by age after ground level falls <https://www.sciencedirect.com/science/article/abs/pii/S0020138316302595>
+
+Managing Older Adults with Ground-Level Falls Admitted to a Trauma Service: The Effect of Frailty
+
+<https://agsjournals.onlinelibrary.wiley.com/doi/full/10.1111/jgs.13338?casa_token=vHUHvmodtSAAAAAA%3AA69B64EfQtIJCV9vO_CVKsgdgEPXzbs2ShryXFCOZN8jjk3vWM3DOaUx2KgvIg89nqhJPjE29eMg5g7o> 
+
+<https://my.clevelandclinic.org/health/articles/24946-beers-criteria>
