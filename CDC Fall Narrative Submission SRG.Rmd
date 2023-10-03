@@ -34,6 +34,8 @@ library(lubridate)
 library(gridExtra)
 library(MASS)
 library(episensr)
+library(arrow)
+library(missForest)
 
 ## Set grraph themes
 #TKTK
@@ -45,7 +47,7 @@ library(episensr)
 
 In order to ascertain key factors and domains resulting in medically significant falls in persons over 65, we convened a panel of physician experts to participate in a two-step process, involving both a structured interview and a follow up questionnaire.
 
-Participants were solicited from across a range of specialities, including emergency/urgent care, medical, and surgical roles. Participants were asked to commit to a 15 minute interview and 10 minute follow up questionnaire. All participants who completed both the interview and questionnaire received a small gift (value \<\$50).
+Participants were solicited from across a range of specialties, including emergency/urgent care, medical, and surgical roles. Participants were asked to commit to a 15 minute interview and 10 minute follow up questionnaire. All participants who completed both the interview and questionnaire received a small gift (value \<\$50).
 
 The initial interview commenced with a review of the project and goals. Next, each panel member was asked about their practice context and the percentage of patients who they see for fall-related complaints. This was followed up with a series of questions designed to elicit causes of severe falls in persons over 65, including causes which make a fall more likely and causes which might cause a fall to be more medically consequential.
 
@@ -204,11 +206,16 @@ First, we manually coded phrases within a randomly selected subset of fall narra
 ### Results
 
 ```{r part 2 import data}
-
+  # Import 
   my_data <- read.csv("Data/primary_data.csv")
   kw<-read.csv("Data/keyword import2.csv")
   topics<-c("Fall.Energy", "Intoxication", "Fragility", "Unfamiliar.Activity",
                "Cognition", "Environment", "Consciousness")
+  my_data500<-my_data[1:500,]%>%
+    mutate(narrative=gsub("[^[:alnum:][:space:]]","",narrative))
+  df<-
+    data.frame(V1=numeric(500))
+  md<-list()
 
 ```
 
