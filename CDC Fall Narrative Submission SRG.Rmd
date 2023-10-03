@@ -223,6 +223,17 @@ Our subject matter experts identified the following dimensions as contributors t
 We identified 245 total keywords for the seven factors examined (range 5-35 keywords per factor). These were matched to 115,128 patient narratives.
 
 ```{r Estimating Thematic Saturation}
+rm(list=ls())
+
+# Import analytic data
+ my_data <- read.csv("Data/primary_data.csv")
+  kw<-read.csv("Data/keyword import2.csv")
+  topics<-c("Fall.Energy", "Intoxication", "Fragility", "Unfamiliar.Activity",
+               "Cognition", "Environment", "Consciousness")
+  my_data500<-my_data[1:500,]%>%mutate(narrative=gsub("[^[:alnum:][:space:]]","",narrative))
+  df<-data.frame(V1=numeric(500))
+  md<-list()
+  
 
  #Part 1: Estimating Thematic Saturation to ensure adequate coding
   
@@ -287,7 +298,7 @@ We identified 245 total keywords for the seven factors examined (range 5-35 keyw
 
 ```
 
-```{r Saturation Plots}
+```{r Saturation Plots, fig.dim = c(2,1.5)}
 
   
   #Print Plots of Saturation
