@@ -24,6 +24,25 @@ output:
 
 [salishresearchgroup\@gmail.com](mailto:email@example.com "Salish Research Group Email")
 
+<<<<<<< HEAD
+=======
+```{r setup, include = FALSE}
+
+#Set Up Environment
+
+## Load packages
+library(tidyverse)
+library(ggthemes)
+library(lubridate)
+library(gridExtra)
+library(MASS)
+library(episensr)
+library(arrow)
+library(missForest)
+
+```
+
+>>>>>>> dbb1c7eb40e6ad0be6feecb586f45fcc43c42778
 ## Introduction
 
 Falls are one of the leading causes of injury and mortality in elderly populations. Among people age 75 and older, an estimated 1/3 of individuals will fall within a given year and 1/4 individuals will suffer serious injury in a fall. Although there has been significant work in identifying risk factors for falls, there is a lack of approachable frameworks for primary prevention of falls.
