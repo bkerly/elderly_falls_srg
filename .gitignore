@@ -6,3 +6,4 @@
 .httr-oauth
 .DS_Store
 .quarto
+.openai_embeddings_primary_narratives.parquet.gzip

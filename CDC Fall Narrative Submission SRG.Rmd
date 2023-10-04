@@ -12,7 +12,7 @@ output:
 
 # TKTK: This is the Title of Our Submission
 
-[![](BEEFERS Logo 2.webp)](https://www.salishresearchgroup.com/)
+[![](BEEFERS%20Logo%202.webp)](https://www.salishresearchgroup.com/)
 
 ***Salish Research Group***
 
@@ -23,24 +23,6 @@ output:
 [salishresearchgroup.com](salishresearchgroup.com "Salish Research Group Homepage")
 
 [salishresearchgroup\@gmail.com](mailto:email@example.com "Salish Research Group Email")
-
-```{r setup, include = FALSE}
-
-#Set Up Environment
-
-## Load packages
-library(tidyverse)
-library(ggthemes)
-library(lubridate)
-library(gridExtra)
-library(MASS)
-library(episensr)
-library(arrow)
-library(missForest)
-
-## Set grraph themes
-#TKTK
-```
 
 ## Introduction
 
@@ -58,6 +40,22 @@ Formally, our project goals are:
 
 ![Methods Overview](Methods%20Image.png)
 
+```{r setup, include = TRUE, warning=FALSE,message=FALSE}
+
+#Set Up Environment
+
+## Load packages
+library(tidyverse)
+library(ggthemes)
+library(lubridate)
+library(gridExtra)
+library(MASS)
+library(episensr)
+library(arrow)
+library(missForest)
+
+```
+
 ## Part 1: Expert Panel
 
 ### Methods
@@ -68,30 +66,34 @@ Participants were solicited from across a range of specialties, including emerge
 
 The initial interview commenced with a review of the project and goals. Next, each panel member was asked about their practice context and the percentage of patients who they see for fall-related complaints. This was followed up with a series of questions designed to elicit causes of severe falls in persons over 65, including causes which make a fall more likely and causes which might cause a fall to be more medically consequential.
 
-Each panel member then received a follow up questionnaire as a google form. This follow up questionnaire was centered around two themes: defining injury patterns associated with fragility / frailty, and ranking the most important factors leading to falls. 
+Each panel member then received a follow up questionnaire as a Google form. This follow up questionnaire was centered around two themes: defining injury patterns associated with fragility / frailty, and ranking the most important factors leading to falls. 
 
 For each of 29 injury patterns, participants were asked to select the degree to which each was associated with frailty in elderly fall patients. Each injury pattern was ranked from 1 ("Not associated with frailty") to 4 ("Pathognomonic for frailty").
 
-Next, each participant was asked to rank 10 factors in order of their association with risk of serious injury in patients over 65 years old. Participants were instructed to place the factors in order, with no ties.
+Next, each participant was asked to rank 10 factors in order of their association with risk of serious injury in patients over 65 years old. Participants were instructed to rank all factors in order, with no ties.
 
 ### Results
 
-Seven physicians were contacted to participate in the panel, of whom 5 elected to participate (71.4%). All participants who agreed to participate in the initial panel completed both the structured interview and follow up questionnaire. The panel was composed of one physician each from the following specialties; emergency medicine, otolaryngology, neurosurgery, orthopedic surgery, and inpatient medicine. All participants were board-eligible or board-certified in their specialty.
+Seven physicians were contacted to participate in the panel, of whom 5 elected to participate (71.4%). All participants who agreed to participate in the initial panel completed both the structured interview and follow up questionnaire. The panel was composed of one physician each from the following specialties; emergency medicine, otolaryngology, neurosurgery, orthopedic surgery, and internal medicine. All participants were board-eligible or board-certified in their specialty\`.
 
-During the structured interview, panel members spent a median of 7.5% of their practice time treating patients due to medical consequences of falls (range 2.5-27.5%).
+All respondents responded with a range estimate of their practice time treating patients due to medical consequences of falls, with a midpoint median of 7.5% (range 2.5-27.5%).
 
-```{r Practice time}
+```{r Practice time, include=TRUE, warning=FALSE,message=FALSE}
 # Load practice time data
 practice_time <- read_csv("Data/Practice Time.csv")
 
 # Output plot
 ggplot(data = practice_time,aes(x=reorder(respondant,-mid))) +
-  #geom_point(aes(y=mid))+
-  geom_errorbar(aes(ymin= low,ymax = high))+
+  geom_errorbar(aes(ymin= low/100,ymax = high/100))+
   theme_minimal()+
   ylab("")+
-  xlab("")
-# TKTK make graph prettier.
+  xlab("")+
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+  )+
+  scale_y_continuous(labels = scales::percent)+
+  labs(title = "Percent of Practice Time Spent Addressing Medical Consequences of Falls")
 
 ```
 
@@ -128,7 +130,7 @@ Panel members identified eight classes of medication associated with falls, as w
 
 When responding to the follow up questionnaire, the panel identified pelvic fractures as the injury most associated with fragility, followed by fracture of the native hip joint and fracture of the femur. Overall, 20 of the 29 injury patterns examined had a median ranking of 3 ("Highly suggestive of frailty") or 4 ("Pathognomonic for frailty; would not occur in a non-frail person after a fall").
 
-```{r injury patterns, include = TRUE}
+```{r injury patterns, include = TRUE, warning=FALSE,message=FALSE}
 
 # Load injury pattern data
 injury_patterns_import <- read_csv("Data/injury interview data.csv")
@@ -165,15 +167,20 @@ ggplot(data = injury_patterns) +
   theme_minimal()+
   ylab("")+
   xlab("") + 
+  labs(title = "Association of Injury Patterns with Frailty")
   theme(legend.position = "bottom",
-        legend.title = element_blank())+
+        legend.title = element_blank(),
+
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+  )+
   scale_fill_grey()
 
 ```
 
 Panelists also ranked fall energy as the most important factor associated with the likelihood of a fall related injury (median ranking 1/10), followed by fragility (median ranking 2/10). Intoxication, inappropriate medication or overmedication, medical conditions affecting stability/balance, and cardiac and neurovascular conditions affecting consciousness were all tied for third-place (median ranking 4/10).
 
-```{r fall factors, include = TRUE}
+```{r fall factors, include = TRUE, warning=FALSE,message=FALSE}
 
 # Load injury pattern data
 fall_factor_import <- read_csv("Data/factor interview data.csv")
@@ -197,7 +204,10 @@ fall_factors %>%
   geom_boxplot(fill="grey")+
   coord_flip()+
   xlab("")+
-  ylab("Importance")+
+  ylab("") + 
+  scale_y_reverse()+
+  labs(title = "Fall Risk Factor Importance Rank",
+       subtitle = "1 Indicates Most Important; 10 Indicates Least Important")+
   theme_minimal()
 
 ```
@@ -212,25 +222,27 @@ Guided by the dimensions identified in the clinical surveys, we performed a dedu
 
 #### Evaluation of Thematic Saturation
 
-To ensure that a sufficient number of narratives were coded, we evaluated the thematic saturation of our training sample using methods described in Guest et al, 2020.  Briefly, thematic saturation reflects the point where additional data points no longer contribute new useful information to the study.  Thematic saturation models apply probability theory to estimate the proportion of total themes that have been described.  For our study, we set a baseline of 40% saturation; if any of our themes were below this threshold, we would code an additional 100 narratives.
+To ensure that a sufficient number of narratives were coded, we evaluated the thematic saturation of our training sample using methods described in [Guest et al, 2020](https://doi.org/10.1371/journal.pone.0232076). Briefly, thematic saturation reflects the point where additional data points no longer contribute new useful information to the study. Thematic saturation models apply probability theory to estimate the proportion of total themes that have been described. For our study, we set a baseline of 40% saturation; if any of our themes were below this threshold, we would code an additional 100 narratives.
 
 #### Random Forest Imputation
 
-Once adequate thematic saturation was achieved, we used a random forest model to link the coded themes to text embeddings and apply these relationships to novel data.  We created a dataset of indicator variables denoting whether each theme was present in each of the 500 coded narratives.  We linked this dataset to the OpenAi text embeddings provided by the contest organizers.  Using R's missForest package, we estimated the relationship between the embeddings and our indicator variables and then applied this to the uncoded narratives.  We used a model with 100 trees in each forest and 10 variables in each split.  We used the first 100 embeddings from the OpenAi model.
+Once adequate thematic saturation was achieved, we used a random forest model to link the coded themes to text embeddings and apply these relationships to novel data. We created a dataset of indicator variables denoting whether each theme was present in each of the manuallycoded narratives. We linked this dataset to the OpenAi text embeddings provided by the contest organizers.
+
+Using R's missForest package, we estimated the relationship between the embeddings and our indicator variables and then applied this to the uncoded narratives. We used a model with 100 trees in each forest and 10 variables in each split. We employed the first 100 embeddings from the OpenAi model.
 
 #### Risk Ratio Model
 
-We used a negative binomial model on our imputed dataset to estimate the relationship between our themes and risk of severe outcome (Admitted, Held for Observation, or Died).  We included all themes in a single model to identify the independent contribution of each.  We included age and sex in the model as a potential confounders.  We estimated a risk ratio for each theme and selected the top 3 themes for our primary prevention risk reduction tool.
+We used a negative binomial model on our imputed dataset to estimate the relationship between our themes and risk of severe outcome (Admitted, Held for Observation, or Died). We included all themes in a single model to identify the independent contribution of each. We included age and sex in the model as a potential confounders. We estimated a risk ratio for each theme and selected the top 3 themes for our primary prevention risk reduction tool.
 
 ### Results
 
 *Qualitative Coding*
 
-Our subject matter experts identified the following dimensions as contributors to fall severity: "Fall Energy", "Intoxication", "Fragility of Patient", "Participation in Unfamiliar Activity", "Cognitive Impairment", "Dangerous Environment", and "Loss of Consciousness".  The coders identified 21, 8, 34,27, 6, 19, and 12 themes within the first 500 narratives, respectively.  An examples of themes estimates of thematic saturation and an example fit plot for saturation modelling can be found in **Table 1** and **Figure 2.**
+Our subject matter experts identified the following dimensions as contributors to fall severity: "Fall Energy", "Intoxication", "Fragility of Patient", "Participation in Unfamiliar Activity", "Cognitive Impairment", "Dangerous Environment", and "Loss of Consciousness". The coders identified 21, 8, 34,27, 6, 19, and 12 themes within the first 500 narratives, respectively.  An examples of themes estimates of thematic saturation and an example fit plot for saturation modelling can be found in **Table 1** and **Figure 2.**
 
 We identified 245 total keywords for the seven factors examined (range 5-35 keywords per factor). These were matched to 115,128 patient narratives.
 
-```{r Estimating Thematic Saturation}
+```{r Estimating Thematic Saturation, warning=FALSE,message=FALSE}
 rm(list=ls())
 
 # Import analytic data
@@ -306,7 +318,7 @@ rm(list=ls())
 
 ```
 
-```{r Saturation Plots, fig.dim = c(2,1.5)}
+```{r Saturation Plots, fig.dim = c(4,3), warning=FALSE,message=FALSE}
 
   
   #Print Plots of Saturation
@@ -329,7 +341,7 @@ for (i in 1:7){
 
 We applied the qualitative coding to the remaining 114,628 observations using text embeddings and random forest imputation.
 
-```{r Part 2: Machine Learning Imputation Using Text Embeddings l}
+```{r Part 2: Machine Learning Imputation Using Text Embeddings l, warning=FALSE,message=FALSE}
 
  #Part 2A: Creating Training Data for Imputation Model (500 first narratives which were coded) 
     #Function to Create Indicators for The Presence of Each Theme)
@@ -366,7 +378,7 @@ We applied the qualitative coding to the remaining 114,628 observations using te
 
 ```
 
-```{r Part4; Negative Binomial Regression To Identify Strongest Risk Factors }
+```{r Part 3; Negative Binomial Regression To Identify Strongest Risk Factors, warning=FALSE,message=FALSE }
 
 #Part4; Negative Binomial Regression To Identify Strongest Risk Factors  
   #Adding Outcome Indicator to 
