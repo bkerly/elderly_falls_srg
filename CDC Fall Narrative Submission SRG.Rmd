@@ -315,7 +315,9 @@ rm(list=ls())
       mutate(Topic = str_replace(Topic,pattern = fixed("."),replacement = " ")) %>%
       mutate(`Saturation Estimate` = paste0(Estimate,"%")) %>%
       dplyr::select(Topic, `Example Theme`, `Saturation Estimate`) %>%
-      DT::datatable()
+      DT::datatable(options = list(lengthChange = FALSE,
+                                   searching = FALSE,
+                                   info = FALSE))
 
 ```
 
@@ -386,22 +388,28 @@ We applied the qualitative coding to the remaining 114,628 observations using te
     Outcome<-my_data%>%mutate(Outcome=ifelse(disposition>3,1,0))%>%dplyr::select(cpsc_case_number, Outcome, age, sex)
     embed6<-embed5%>%left_join(Outcome)
   #Negative Binomial Model
-    exp(glm(Outcome~Fall.Energy+Intoxication+Fragility+Unfamiliar.Activity+Cognition+Environment+Consciousness+age+sex,embed6,
-      family='binomial')$coefficients)
+    nbm_coeff <- exp(glm(Outcome~Fall.Energy+Intoxication+Fragility+Unfamiliar.Activity+Cognition+Environment+Consciousness+age+sex,embed6,
+      family='binomial')$coefficients) %>%
+      as.list %>%
+      as.tibble() %>%
+      t() %>%
+      data.frame() 
+    
+    nbm_coeff$Theme <-  row.names(nbm_coeff)
+
+    nbm_coeff %>%
+      `colnames<-`(c("Risk Ratio","Theme")) %>%
+      dplyr::select(Theme,`Risk Ratio`) %>%
+      arrange(desc(`Risk Ratio`)) %>%
+      mutate(Theme = str_replace(Theme,"1","")) %>%
+      filter(!(Theme %in% (c("age","sex")))) %>%
+      DT::datatable(rownames=NULL,
+                    options = list(lengthChange = FALSE,
+                                   searching = FALSE,
+                                   info = FALSE))
 
 ```
 
-A negative binomial model containing all domains and age yielded the following risk ratio estimates:
-
-| Theme                  | Risk Ratio |
-|------------------------|------------|
-| Fall Energy            | 1.06       |
-| Intoxication           | 1.99       |
-| Fragility              | 1.20       |
-| Unfamiliar Activity    | 0.82       |
-| Cognitive Impairment   | 1.09       |
-| Unfamiliar Environment | 0.59       |
-| Loss of Consciousness  | 2.50       |
 
 ## Conclusion
 
