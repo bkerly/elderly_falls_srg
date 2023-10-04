@@ -167,7 +167,7 @@ ggplot(data = injury_patterns) +
   theme_minimal()+
   ylab("")+
   xlab("") + 
-  labs(title = "Association of Injury Patterns with Frailty")
+  labs(title = "Association of Injury Patterns with Frailty")+
   theme(legend.position = "bottom",
         legend.title = element_blank(),
 
@@ -315,25 +315,26 @@ rm(list=ls())
       mutate(Topic = str_replace(Topic,pattern = fixed("."),replacement = " ")) %>%
       mutate(`Saturation Estimate` = paste0(Estimate,"%")) %>%
       dplyr::select(Topic, `Example Theme`, `Saturation Estimate`) %>%
+      DT::datatable()
 
 ```
 
 ```{r Saturation Plots, fig.dim = c(4,3), warning=FALSE,message=FALSE}
 
   
-  #Print Plots of Saturation
-for (i in 1:7){
-  ests2<-ests%>%filter(Topic==topics[i])
-  plot<-ggplot(data=ests2)+
+    ests%>%
+
+  ggplot(
+         )+
     geom_line(aes(x=V1,y=cumsum,group=Label, color=Label))+
     theme(axis.ticks = element_blank(),
       panel.grid.minor = element_blank(),
       panel.grid.major = element_blank(),
       panel.background = element_blank(),
       plot.title = element_text(hjust = 0.5))+ 
-      labs(y = "Themes Identified", x = "Records Reviewed", colour = "", title=topics[i])
-    print(plot)
-  }
+      labs(y = "Themes Identified", x = "Records Reviewed", colour = "", title = "") +
+    facet_wrap(~Topic)
+
 
 ```
 
@@ -373,7 +374,7 @@ We applied the qualitative coding to the remaining 114,628 observations using te
        Environment=as.factor(Environment),
        Consciousness=as.factor(Consciousness))
    
-  #Part 2C: Multiple Imputation to Predict Themes in Narratives that Weren't Cocded
+  #Part 2C: Multiple Imputation to Predict Themes in Narratives that Weren't Coded
     embed5<-missForest(embed4)$ximp
 
 ```
