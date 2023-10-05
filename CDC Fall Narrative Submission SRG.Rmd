@@ -10,7 +10,9 @@ output:
     theme: united
 ---
 
-# TKTK: This is the Title of Our Submission
+# **Combining Expert Consensus and AI to Reduce Fall Risk**
+
+# *A hybrid qualitative-analytic approach*
 
 [![](BEEFERS%20Logo%202.webp)](https://www.salishresearchgroup.com/)
 
@@ -66,7 +68,7 @@ Participants were solicited from across a range of specialties, including emerge
 
 The initial interview commenced with a review of the project and goals. Next, each panel member was asked about their practice context and the percentage of patients who they see for fall-related complaints. This was followed up with a series of questions designed to elicit causes of severe falls in persons over 65, including causes which make a fall more likely and causes which might cause a fall to be more medically consequential.
 
-Each panel member then received a follow up questionnaire as a Google form. This follow up questionnaire was centered around two themes: defining injury patterns associated with fragility / frailty, and ranking the most important factors leading to falls. 
+Each panel member then received a follow up questionnaire as a Google form. This follow up questionnaire was centered around identifying the most important factors leading to falls.
 
 For each of 29 injury patterns, participants were asked to select the degree to which each was associated with frailty in elderly fall patients. Each injury pattern was ranked from 1 ("Not associated with frailty") to 4 ("Pathognomonic for frailty").
 
@@ -128,57 +130,7 @@ Panel members identified eight classes of medication associated with falls, as w
 
 : Table 2: Medication classes identified as associated with falls during unstructured clinician panel interviews.
 
-When responding to the follow up questionnaire, the panel identified pelvic fractures as the injury most associated with fragility, followed by fracture of the native hip joint and fracture of the femur. Overall, 20 of the 29 injury patterns examined had a median ranking of 3 ("Highly suggestive of frailty") or 4 ("Pathognomonic for frailty; would not occur in a non-frail person after a fall").
-
-```{r injury patterns, include = TRUE, warning=FALSE,message=FALSE}
-
-# Load injury pattern data
-injury_patterns_import <- read_csv("Data/injury interview data.csv")
-
-injury_patterns <- injury_patterns_import %>%
-  # remove brackets
-  mutate(Injury = stringi::stri_replace_all_fixed(Injury,"[","")) %>%
-  mutate(Injury = stringi::stri_replace_all_fixed(Injury,"]","")) %>%
-  
-  arrange(desc(Mean)) %>%
-  
-  mutate(Injury = factor(Injury,
-                         levels = unique(Injury))) %>%
-  
-  # remove summary stats
-  dplyr::select(-Median,-Mean) %>%
-  # # convert to long format
-  pivot_longer(-Injury,names_to = "respondent",values_to = "ranking") %>%
-  # convert ranking numeric to text
-  mutate(ranking = 
-           factor(ranking, 
-                  levels = c(4,3,2,1),
-                  labels = c("Pathognomonic for frailty",
-                             "Highly suggestive of frailty",
-                             "Suspicious for frailty",
-                             "Not assocaited with frailty"))
-  ) %>%
-  mutate(order = 
-           as.numeric(Injury))
-
-ggplot(data = injury_patterns) +
-  coord_flip()+
-  geom_bar(aes(x=reorder(Injury,-as.numeric(Injury)),fill=ranking))+
-  theme_minimal()+
-  ylab("")+
-  xlab("") + 
-  labs(title = "Association of Injury Patterns with Frailty")+
-  theme(legend.position = "bottom",
-        legend.title = element_blank(),
-
-    axis.title.x = element_blank(),
-    axis.text.x = element_blank(),
-  )+
-  scale_fill_grey()
-
-```
-
-Panelists also ranked fall energy as the most important factor associated with the likelihood of a fall related injury (median ranking 1/10), followed by fragility (median ranking 2/10). Intoxication, inappropriate medication or overmedication, medical conditions affecting stability/balance, and cardiac and neurovascular conditions affecting consciousness were all tied for third-place (median ranking 4/10).
+Panelists ranked fall energy as the most important factor associated with the likelihood of a fall related injury (median ranking 1/10), followed by fragility (median ranking 2/10). Intoxication, inappropriate medication or overmedication, medical conditions affecting stability/balance, and cardiac and neurovascular conditions affecting consciousness were all tied for third-place (median ranking 4/10).
 
 ```{r fall factors, include = TRUE, warning=FALSE,message=FALSE}
 
@@ -321,7 +273,7 @@ rm(list=ls())
 
 ```
 
-```{r Saturation Plots, fig.dim = c(4,3), warning=FALSE,message=FALSE}
+```{r Saturation Plots, fig.dim(6,4),warning=FALSE,message=FALSE}
 
   
     ests%>%
@@ -401,8 +353,9 @@ We applied the qualitative coding to the remaining 114,628 observations using te
       `colnames<-`(c("Risk Ratio","Theme")) %>%
       dplyr::select(Theme,`Risk Ratio`) %>%
       arrange(desc(`Risk Ratio`)) %>%
-      mutate(Theme = str_replace(Theme,"1","")) %>%
-      filter(!(Theme %in% (c("age","sex")))) %>%
+      transmute(Domain = str_replace(Theme,"1",""),
+             `Risk Ratio` = round(`Risk Ratio`,2)) %>%
+      filter(!(Domain %in% (c("age","sex","(Intercept)")))) %>%
       DT::datatable(rownames=NULL,
                     options = list(lengthChange = FALSE,
                                    searching = FALSE,
@@ -410,25 +363,50 @@ We applied the qualitative coding to the remaining 114,628 observations using te
 
 ```
 
-
 ## Conclusion
 
-Our results suggest that the domains of intoxication, loss of consciousness, and patient fragility are the largest contributors to risk of severe fall in our data set. This agrees well with the judgement of our expert panel, which ranked all of these domains in the top half of factors related to more severe falls.
+Our results suggest that the domains of intoxication, loss of consciousness, and patient fragility are the largest contributors to risk of severe fall in our data set. This agrees well with the judgement of our expert panel, which ranked all of these domains in the top half of factors related to more severe falls. Further confirming the jusgement of our clinician panel, unfamiliar environments and activities were not predicted to be top contributors to severe fall risk, and were not found to be associated with severe falls in our data set.
 
-In contrast, unfamiliar environments and activities were not expected to be top contributors to severe fall risk, and were not found to be associated with severe falls in our data set.
+Our analysis has several important implications. The CDC's STEADI Older Adult Fall Prevention plan identifies vetibular disorders/poor balance, vitamin D deficiency, medications linked to falls, postural hypotension, vision impairment, foot or ankle disorders, and home hazards as key modifiable risk factors for falls. While there is significant concordance between our findings and the CDC recommendations, intoxication is a key outlier. We found that intoxication nearly doubled the risk of a fall resulting in a serious outcome, but it was excluded from the CDC plan. This suggests that patients may not be routinely receiving interventions focused on the role of intoxicants in severe falls in guidance-driven fall prevention programs.
 
-Providers and caregivers who are seeking to prevent severe falls should consider these domains.
+Second, the finding that unfamiliar environments and activities were not associated with falls suggests that restricting the activities of elderly individuals to reduce injury risk may be misguided in some circumstances. Indeed, appropriate physical and social activities may slow physical and cognitive decline, both supporting independence and potentially reducing the risk of serious falls.
+
+Our analysis was subject to at least 3 limitations. First, falls entered into the NEISS database only included falls which resulted in an ED visit. It may be that patients are more likely to present to the ED for falls in certain contexts; for example, a nursing home might have a policy that all falls are evaluated in the ED. This would result in patients living in a nursing home (coded as more likely to be frail) having less severe falls; it therefore may be that the link between fragility and fall severity is stronger than we observed. Second, we limited our analysis to the data in the fall narrative, which excluded other information which may be associated with fall severity and may have resulted in undetected confounding factors. These could include relevant contextual information or information about underlying medical conditions. Finally, our data only focused on short term outcomes of falls, basded on disposition after the ED visit. We were not able to analyze the effects of falls on long-term quality of life, including whether patients required a hire level of long term care or new assistance with ADLs.
+
+In sum, our analysis suggests that intoxication, loss of consciousness, and frailty are key factors resulting in more severe falls among elderly patients, while unfamiliar activities or environments are not associated with increased risk. Providers seeking to reduce the risk of serious falls among the elderly should consider counseling about intoxicants and should support engagement with age-appropriate activities.
 
 ## Abridged References
 
-Tinetti, M. E., Speechley, M., & Ginter, S. F. (1988). Risk factors for falls among elderly persons living in the community. New England journal of medicine, 319(26), 1701-1707.
+#### Literature
+
+Bhattacharya, B., Maung, A., Schuster, K., & Davis, K. A. (2016). The older they are the harder they fall: injury patterns and outcomes by age after ground level falls. Injury, 47(9), 1955-1959.
+
+Fick, D. M., Cooper, J. W., Wade, W. E., Waller, J. L., Maclean, J. R., & Beers, M. H. (2003). Updating the Beers criteria for potentially inappropriate medication use in older adults: results of a US consensus panel of experts. Archives of internal medicine, 163(22), 2716-2724.
 
 Guest, G., Namey, E., & Chen, M. (2020). A simple method to assess and report thematic saturation in qualitative research. PloS one, 15(5), e0232076
 
-The older they are the harder they fall: Injury patterns and outcomes by age after ground level falls <https://www.sciencedirect.com/science/article/abs/pii/S0020138316302595>
+Joseph, B., Pandit, V., Khalil, M., Kulvatunyou, N., Zangbar, B., Friese, R. S., ... & Rhee, P. (2015). Managing older adults with ground‐level falls admitted to a trauma service: the effect of frailty. Journal of the American Geriatrics Society, 63(4), 745-749.
 
-Managing Older Adults with Ground-Level Falls Admitted to a Trauma Service: The Effect of Frailty
+Tinetti, M. E., Speechley, M., & Ginter, S. F. (1988). Risk factors for falls among elderly persons living in the community. New England journal of medicine, 319(26), 1701-1707.
 
-<https://agsjournals.onlinelibrary.wiley.com/doi/full/10.1111/jgs.13338?casa_token=vHUHvmodtSAAAAAA%3AA69B64EfQtIJCV9vO_CVKsgdgEPXzbs2ShryXFCOZN8jjk3vWM3DOaUx2KgvIg89nqhJPjE29eMg5g7o> 
+#### Statistical Packages
 
-<https://my.clevelandclinic.org/health/articles/24946-beers-criteria>
+Arnold J (2021). \_ggthemes: Extra Themes, Scales and Geoms for 'ggplot2'\_. R package version 4.2.4, <https://CRAN.R-project.org/package=ggthemes>.
+
+Auguie B (2017). \_gridExtra: Miscellaneous Functions for "Grid" Graphics\_. R package version 2.3, <https://CRAN.R-project.org/package=gridExtra>.
+
+Daniel J. Stekhoven (2022). missForest: Nonparametric Missing Value Imputation using Random Forest. R package version 1.5.
+
+Garrett Grolemund, Hadley Wickham (2011). Dates and Times Made Easy with lubridate. Journal of Statistical Software, 40(3), 1-25. URL <https://www.jstatsoft.org/v40/i03/.>
+
+Haine, Denis (2023). The episensr package: basic sensitivity analysis of epidemiological results. R package version 1.3.0. <https://dhaine.github.io/episensr/.> doi: 10.5281/zenodo.8299430.
+
+R Core Team (2023). \_R: A Language and Environment for Statistical Computing\_. R Foundation for Statistical Computing, Vienna, Austria. <https://www.R-project.org/>.
+
+Richardson N, Cook I, Crane N, Dunnington D, François R, Keane J, Moldovan-Grünfeld D, Ooms J, Apache Arrow (2023). \_arrow: Integration to 'Apache' 'Arrow'\_. R package version 13.0.0.1, <https://CRAN.R-project.org/package=arrow>.
+
+Stevens, J. A. (2013). The STEADI tool kit: a fall prevention resource for health care providers. The IHS primary care provider, 39(9), 162.
+
+Venables, W. N. & Ripley, B. D. (2002) Modern Applied Statistics with S. Fourth Edition. Springer, New York. ISBN 0-387-95457-0
+
+Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). "Welcome to the tidyverse." \_Journal of Open Source Software\_, \*4\*(43), 1686. doi:10.21105/joss.01686 <https://doi.org/10.21105/joss.01686>.
